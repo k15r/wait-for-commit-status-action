@@ -1,50 +1,58 @@
-> **NOTE:** This is a general template that can be used for a project README.md, example README.md, or any other README.md type in all Kyma repositories in the Kyma organization. Except for the mandatory sections, use only those sections that suit your use case but keep the proposed section order.
->
-> Mandatory sections: 
-> - `Overview`
-> - `Prerequisites`, if there are any requirements regarding hard- or software
-> - `Contributing` - do not change this!
-> - `Code of Conduct` - do not change this!
-> - `Licensing` - do not change this!
-
-# {Project Title}
-<!--- mandatory --->
-> Modify the title and insert the name of your project. Use Heading 1 (H1).
+# Wait-for-commit-status-action
 
 ## Overview
-<!--- mandatory section --->
-
-> Provide a description of the project's functionality.
->
-> If it is an example README.md, describe what the example illustrates.
+This action waits for a commit status to succeed, and it also returns the JSON of the commit status. It uses the Github API [Get the combined status for a specific reference](https://docs.github.com/en/rest/commits/statuses?apiVersion=2022-11-28#get-the-combined-status-for-a-specific-reference) to fetch the commit statuses and then checks the status of the specified status `context`.
 
 ## Prerequisites
 
-> List the requirements to run the project or example.
-
-## Installation
-
-> Explain the steps to install your project. Create an ordered list for each installation task.
->
-> If it is an example README.md, describe how to build, run locally, and deploy the example. Format the example as code blocks and specify the language, highlighting where possible. Explain how you can validate that the example ran successfully. For example, define the expected output or commands to run which check a successful deployment.
->
-> Add subsections (H3) for better readability.
+- [Python](https://www.python.org/)
+- [Docker](https://www.docker.com/)
 
 ## Usage
 
-> Explain how to use the project. You can create multiple subsections (H3). Include the instructions or provide links to the related documentation.
+### Example
+```
+jobs:
+  example_case:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run the action
+        id: test_action
+        uses: kyma-project/wait-for-commit-status-action@main
+        with:
+          context: "<CONTEXT_NAME>"
+          commit_ref: "<COMMIT_REF | SHA>"
+          timeout: <TIME_IN_MILLISECONDS>
+          check_interval: <TIME_IN_MILLISECONDS>
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_OWNER: "<OWNER>"
+          GITHUB_REPO: "<REPO>"
+      - name: Use the results
+        run: |
+          echo "${{ steps.test_action.outputs.state }}"
+          echo "${{ steps.test_action.outputs.json }}"
+```
 
-## Development
+### Required Inputs
 
-> Add instructions on how to develop the project or example. It must be clear what to do and, for example, how to trigger the tests so that other contributors know how to make their pull requests acceptable. Include the instructions or provide links to related documentation.
+- **`context`**: The context value of the status.
+- **`commit_ref`**: The commit [reference](https://docs.github.com/en/rest/commits/statuses?apiVersion=2022-11-28#get-the-combined-status-for-a-specific-reference). Can be a commit SHA, branch name (`heads/BRANCH_NAME`), or tag name (`tags/TAG_NAME`).
+- **`timeout`**: The time (Milliseconds) to wait for the status to succeed.
+- **`check_interval`**: The time (in milliseconds) to wait before checking the commit status again.
+  > **NOTE:** The GitHub REST API uses [rate limiting](https://docs.github.com/en/rest/overview/resources-in-the-rest-api?apiVersion=2022-11-28#rate-limiting), so a small check interval may exhaust the request limit.
 
-## Troubleshooting
+### Required ENV variables
 
-> List potential issues and provide tips on how to avoid or solve them. To structure the content, use the following sections:
->
-> - **Symptom**
-> - **Cause**
-> - **Remedy**
+- **`GITHUB_TOKEN`**: Token to authenticate with Github API, such as `${{ secrets.GITHUB_TOKEN }}`.
+- **`GITHUB_OWNER`**: The account owner of the repository. The name is not case sensitive.
+- **`GITHUB_REPO`**: The name of the repository without the .git extension. The name is not case sensitive.
+
+### Outputs
+
+- **`state`**: The state value of the retrieved status.
+- **`json`**: The stringified JSON of the retrieved status object.
 
 ## Contributing
 <!--- mandatory section - do not change this! --->
