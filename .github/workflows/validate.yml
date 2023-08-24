@@ -1,0 +1,78 @@
+name: validate
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  success_case:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run the action
+        id: test_action
+        uses: ./ # Uses an action in the root directory
+        with:
+          context: "pull-nats-module-build"
+          commit_ref: "d22878fa0e184fcd1e74965337161d33778e190a"
+          timeout: 180000
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_OWNER: "kyma-project"
+          GITHUB_REPO: "nats-manager"
+      - name: Print the results
+        run: |
+          echo "${{ steps.test_action.outputs.state }}"
+          echo "${{ steps.test_action.outputs.json }}"
+  failure_case:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run the action
+        id: test_action
+        continue-on-error: true
+        uses: ./ # Uses an action in the root directory
+        with:
+          context: "pull-nats-manager-build"
+          commit_ref: "d22878fa0e184fcd1e74965337161d33778e190a"
+          timeout: 180000
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_OWNER: "kyma-project"
+          GITHUB_REPO: "nats-manager"
+      - name: Print the results
+        run: |
+          echo "${{ steps.test_action.outputs.state }}"
+          echo "${{ steps.test_action.outputs.json }}"
+      - name: Check if the state was failure
+        env:
+          OUTPUT_STATE: "${{ steps.test_action.outputs.state }}"
+        run: |
+          if [ ${OUTPUT_STATE} != "failure" ]; then exit 1; fi
+  timeout_notfound_case:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run the action
+        id: test_action
+        continue-on-error: true
+        uses: ./ # Uses an action in the root directory
+        with:
+          context: "non-existing"
+          commit_ref: "d22878fa0e184fcd1e74965337161d33778e190a"
+          timeout: 70000
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_OWNER: "kyma-project"
+          GITHUB_REPO: "nats-manager"
+      - name: Print the results
+        run: |
+          echo "${{ steps.test_action.outputs.state }}"
+          echo "${{ steps.test_action.outputs.json }}"
+      - name: Check if the state was failure
+        env:
+          OUTPUT_STATE: "${{ steps.test_action.outputs.state }}"
+        run: |
+          if [ ${OUTPUT_STATE} != "timeout" ]; then exit 1; fi
