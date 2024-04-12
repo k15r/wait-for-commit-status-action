@@ -1,5 +1,7 @@
 # Wait-for-commit-status-action
 
+[![REUSE status](https://api.reuse.software/badge/github.com/kyma-project/wait-for-commit-status-action)](https://api.reuse.software/info/github.com/kyma-project/wait-for-commit-status-action)
+
 ## Overview
 This action waits for a commit status to succeed, and it also returns the JSON of the commit status. It uses the Github API [Get the combined status for a specific reference](https://docs.github.com/en/rest/commits/statuses?apiVersion=2022-11-28#get-the-combined-status-for-a-specific-reference) to fetch the commit statuses and then checks the status of the specified status `context`.
 
