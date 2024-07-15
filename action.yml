@@ -33,6 +33,7 @@ runs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
+        cache: 'pip'
     - name: Pass Inputs as ENVs
       run: |
         echo "ACTION_PATH=${{ github.action_path }}" >> $GITHUB_ENV
